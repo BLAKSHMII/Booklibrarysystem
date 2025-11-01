@@ -112,3 +112,49 @@ Generate the Python SDK using OpenAPI.
 Run test_sdk.py to interact with the API.
 
 Use the React dashboard to manage books visually.
+
+
+# ===============================
+# AUTOMATION SCRIPT (WINDOWS)
+# FastAPI + Frontend + SDK Setup
+# ===============================
+
+Write-Host "=== Step 1: Create Python virtual environment ==="
+python -m venv venv
+venv\Scripts\activate
+
+Write-Host "=== Step 2: Install backend dependencies ==="
+pip install -r backend\requirements.txt
+
+# ===============================
+# Apply DB setup (optional)
+# ===============================
+Write-Host "=== Step 3: Configure database (optional) ==="
+# Example: if using SQLite, skip this; for MySQL, uncomment below
+# python backend\app\database.py
+
+# ===============================
+# Generate Python SDK
+# ===============================
+Write-Host "=== Step 4: Generate SDK from FastAPI OpenAPI spec ==="
+Start-Process powershell -ArgumentList "cd backend; uvicorn main:app --reload"  # Start backend temporarily
+Start-Sleep -Seconds 5  # wait for server to start
+openapi-generator-cli generate -i http://localhost:8000/openapi.json -g python -o library_sdk --skip-validate-spec
+Stop-Process -Name "python" -ErrorAction SilentlyContinue
+
+# ===============================
+# Frontend setup
+# ===============================
+Write-Host "=== Step 5: Install frontend dependencies ==="
+cd frontend
+npm install
+cd ..
+
+# ===============================
+# Run both servers
+# ===============================
+Write-Host "=== Step 6: Launch backend and frontend ==="
+Start-Process powershell -ArgumentList "cd backend; uvicorn main:app --reload"
+Start-Process powershell -ArgumentList "cd frontend; npm start"
+
+Write-Host " Setup complete! Backend: http://127.0.0.1:8000  |  Frontend: http://localhost:3000"
